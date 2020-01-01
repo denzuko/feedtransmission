@@ -1,0 +1,5 @@
+name: denzuko/feedtransmission
+version: 0.0.1
+path: /feedtransmission
+build:
+- docker run --rm -v "$PWD":/worker -w /worker iron/python:latest pip install -t packages -r requirements.txt
