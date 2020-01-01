@@ -9,6 +9,7 @@ import re
 
 # path to the added items list file
 added_items_filepath = os.path.join(os.path.abspath(os.path.dirname(os.path.abspath(__file__))), 'addeditems.txt')
+args = None
 
 # read the added items list from the file
 def readAddedItems():
@@ -51,54 +52,52 @@ def parseFeed(feed_url):
 				except:
 					logging.error("Error adding item \'{0}\': {1}".format(item.link, str(sys.exc_info()[0]).strip()))
 
-# argparse configuration and argument definitions
-parser = argparse.ArgumentParser(description='Reads RSS/Atom Feeds and add torrents to Transmission')
-parser.add_argument('feed_urls', metavar='<url>', type=str, nargs='+',
-				   help='Feed Url(s)')
-parser.add_argument('--transmission-host',
-					metavar='<host>',
-					default='localhost',
-					help='Host for Transmission RPC (default: %(default)s)')
-parser.add_argument('--transmission-port',
-					default='9091',
-					metavar='<port>',
-					help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('--transmission-user',
-					default=None,
-					metavar='<user>',
-					help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('--transmission-password',
-					default=None,
-					metavar='<password>',
-					help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('--add-paused',
-					action='store_true',
-					help='Disables starting torrents after adding them')
-parser.add_argument('--log-file',
-					default=None,
-					metavar='<logfile path>',
-					help='The logging file, if not specified, prints to output')
-parser.add_argument('--clear-added-items',
-					action='store_true',
-					help='Clears the list of added torrents. You can also do that by deleting the addeditems.txt')
-parser.add_argument('--download-dir',
-					default=None,
-					metavar='<dir>',
-					help='The directory where the downloaded contents will be saved in. Optional.')
-parser.add_argument('--search-pattern',
-					default=None,
-					metavar='<pattern>',
-					help='The search pattern to filter the feed. Used with re.search() python function. Optional.')
+def main:
+	# argparse configuration and argument definitions
+	parser = argparse.ArgumentParser(description='Reads RSS/Atom Feeds and add torrents to Transmission')
+	parser.add_argument('feed_urls', metavar='<url>', type=str, nargs='+', help='Feed Url(s)')
+	parser.add_argument('--transmission-host',
+						metavar='<host>',
+						default='localhost',
+						help='Host for Transmission RPC (default: %(default)s)')
+	parser.add_argument('--transmission-port',
+						default='9091',
+						metavar='<port>',
+						help='Port for Transmission RPC (default: %(default)s)')
+	parser.add_argument('--transmission-user',
+						default=None,
+						metavar='<user>',
+						help='Port for Transmission RPC (default: %(default)s)')
+	parser.add_argument('--transmission-password',
+						default=None,
+						metavar='<password>',
+						help='Port for Transmission RPC (default: %(default)s)')
+	parser.add_argument('--add-paused',
+						action='store_true',
+						help='Disables starting torrents after adding them')
+	parser.add_argument('--log-file',
+						default=None,
+						metavar='<logfile path>',
+						help='The logging file, if not specified, prints to output')
+	parser.add_argument('--clear-added-items',
+						action='store_true',
+						help='Clears the list of added torrents. You can also do that by deleting the addeditems.txt')
+	parser.add_argument('--download-dir',
+						default=None,
+						metavar='<dir>',
+						help='The directory where the downloaded contents will be saved in. Optional.')
+	parser.add_argument('--search-pattern',
+						default=None,
+						metavar='<pattern>',
+						help='The search pattern to filter the feed. Used with re.search() python function. Optional.')
 
-# parse the arguments
-args = parser.parse_args()
+	# parse the arguments
+	args = parser.parse_args()
 
-if __name__ == "__main__":
 	if args.log_file:
 		logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',level=logging.DEBUG, filename=args.log_file)
 	else:
 		logging.basicConfig(format='%(asctime)s: %(message)s',level=logging.DEBUG)
-
 
 	# clears the added items file if asked for
 	if args.clear_added_items:
@@ -109,11 +108,16 @@ if __name__ == "__main__":
 		tc = transmissionrpc.Client(args.transmission_host, port=args.transmission_port, user=args.transmission_user, password=args.transmission_password)
 	except transmissionrpc.error.TransmissionError as te:
 		logging.error("Error connecting to Transmission: " + str(te).strip())
-		exit(0)
+		exit(1)
 	except:
 		logging.error("Error connecting to Transmission: " + str(sys.exc_info()[0]).strip())
-		exit(0)
+		exit(1)
 
 	# read the feed urls from config
 	for feed_url in args.feed_urls:
 		parseFeed(feed_url)
+		
+	exit(0)
+
+if __name__ == "__main__":
+	main()
