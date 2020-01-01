@@ -1,0 +1,6 @@
+runtime "python"
+exec "feedtransmission.py"
+
+requirements 'requirements.txt'
+
+remote
